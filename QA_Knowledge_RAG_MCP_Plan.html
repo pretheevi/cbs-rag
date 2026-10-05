@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QA Knowledge RAG Plan</title>
+<style>
+  @page { size: A4; margin: 13mm 12mm 14mm 12mm; }
+  :root{
+    --ink:#1f2937; --muted:#5b6472; --line:#e5e7eb; --bg:#ffffff; --soft:#f7f8fb;
+    --navy:#1e3a5f; --navy2:#2d5486;
+    --tc:#2563eb; --tc-bg:#eaf1ff;
+    --feat:#15803d; --feat-bg:#e8f6ec;
+    --ctx:#b45309; --ctx-bg:#fff4e2;
+    --jira:#7c3aed; --jira-bg:#f1eaff;
+    --code:#0f766e; --code-bg:#e3f5f2;
+    --kw:#ea580c; --kw-bg:#fff0e6;
+    --sem:#9333ea; --sem-bg:#f6ecff;
+    --hyb:#0891b2; --hyb-bg:#e4f7fb;
+    --rel:#db2777; --rel-bg:#fde9f3;
+    --stat:#4d7c0f; --stat-bg:#eff7e1;
+  }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font:10.2pt/1.5 "Segoe UI", Arial, sans-serif; }
+  h1,h2,h3,h4{ margin:0; line-height:1.25; }
+  h2{ font-size:17pt; color:var(--navy); margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+  h2 .num{ display:inline-flex; width:30px; height:30px; border-radius:8px; background:var(--navy); color:#fff; font-size:12pt; align-items:center; justify-content:center; }
+  h3{ font-size:12pt; color:var(--navy2); margin:14px 0 6px; }
+  p{ margin:4px 0 8px; }
+  .lead{ color:var(--muted); margin-bottom:12px; }
+  section{ break-before:page; }
+  section.first{ break-before:auto; }
+  .avoid{ break-inside:avoid; }
+  ul{ margin:4px 0 8px 18px; padding:0; } li{ margin:2px 0; }
+  code{ font-family:Consolas, "Cascadia Mono", monospace; font-size:9pt; background:#eef1f6; padding:0 4px; border-radius:4px; }
+  b.tc{color:var(--tc)} b.feat{color:var(--feat)} b.ctx{color:var(--ctx)} b.jira{color:var(--jira)} b.code{color:var(--code)}
+
+  /* cover */
+  .cover{ height:268mm; display:flex; flex-direction:column; justify-content:center; padding:0 10mm;
+          background:linear-gradient(150deg,#1e3a5f 0%,#2d5486 55%,#3b82c4 100%); color:#fff; border-radius:14px; }
+  .cover h1{ font-size:30pt; margin-bottom:10px; }
+  .cover .sub{ font-size:13pt; opacity:.92; max-width:150mm; }
+  .cover .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:26px; }
+  .cover .chip{ background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.35); padding:5px 12px; border-radius:20px; font-size:10pt; }
+  .cover .meta{ margin-top:40px; font-size:9.5pt; opacity:.8; }
+  .toc{ margin-top:30px; background:rgba(255,255,255,.1); border-radius:10px; padding:14px 18px; font-size:10pt; columns:2; column-gap:24px; }
+  .toc div{ margin:3px 0; }
+
+  /* cards */
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .card{ border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:#fff; break-inside:avoid; }
+  .card h4{ font-size:10.8pt; margin-bottom:4px; }
+  .card.kw{ background:var(--kw-bg); border-color:#fdc9a5; } .card.kw h4{ color:var(--kw); }
+  .card.sem{ background:var(--sem-bg); border-color:#dcc0f7; } .card.sem h4{ color:var(--sem); }
+  .card.rel{ background:var(--rel-bg); border-color:#f6bfd9; } .card.rel h4{ color:var(--rel); }
+  .card.tc{ background:var(--tc-bg); border-color:#bcd2fb; } .card.tc h4{ color:var(--tc); }
+  .card.feat{ background:var(--feat-bg); border-color:#b6e2c3; } .card.feat h4{ color:var(--feat); }
+  .card.ctx{ background:var(--ctx-bg); border-color:#f6d39b; } .card.ctx h4{ color:var(--ctx); }
+  .card.jira{ background:var(--jira-bg); border-color:#d6c3fb; } .card.jira h4{ color:var(--jira); }
+  .card.code{ background:var(--code-bg); border-color:#a9ddd5; } .card.code h4{ color:var(--code); }
+  .ex{ font-style:italic; color:#374151; }
+
+  .callout{ border-left:5px solid var(--navy2); background:var(--soft); padding:8px 12px; border-radius:0 8px 8px 0; margin:8px 0; break-inside:avoid; }
+  .callout.warn{ border-color:#d97706; background:#fff8eb; }
+  .callout.good{ border-color:#16a34a; background:#effaf2; }
+
+  .badge{ display:inline-block; font-size:7.8pt; font-weight:700; letter-spacing:.4px; padding:1px 7px; border-radius:10px; color:#fff; vertical-align:middle; }
+  .b-tc{background:var(--tc)} .b-feat{background:var(--feat)} .b-ctx{background:var(--ctx)} .b-jira{background:var(--jira)} .b-code{background:var(--code)}
+  .b-ex{background:#9ca3af}
+
+  /* tables */
+  table{ width:100%; border-collapse:collapse; margin:6px 0 10px; font-size:9.3pt; break-inside:auto; }
+  th{ background:var(--navy); color:#fff; text-align:left; padding:6px 8px; font-weight:600; }
+  td{ padding:5px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:nth-child(even) td{ background:#fafbfd; }
+  tr{ break-inside:avoid; }
+
+  /* json */
+  pre{ margin:6px 0 10px; padding:10px 12px; border-radius:9px; background:#0f1b2d; color:#dbe4f0; font:8.4pt/1.42 Consolas,"Cascadia Mono",monospace; white-space:pre-wrap; word-break:break-word; break-inside:auto; }
+  pre .k{ color:#7dd3fc; } pre .s{ color:#fcd38d; } pre .n{ color:#f9a8d4; } pre .b{ color:#c4b5fd; } pre .c{ color:#86efac; font-style:italic; }
+  pre.mongo{ background:#14261f; }
+  .jsonhead{ display:flex; align-items:center; gap:8px; margin-top:12px; font-weight:700; color:var(--navy); }
+
+  /* demo */
+  .demo{ border-radius:11px; overflow:hidden; border:1px solid var(--line); margin:10px 0 14px; break-inside:avoid; }
+  .demo .hd{ padding:8px 12px; color:#fff; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
+  .demo .bd{ padding:10px 12px; }
+  .demo.kw .hd{ background:var(--kw); } .demo.kw .bd{ background:var(--kw-bg); }
+  .demo.sem .hd{ background:var(--sem); } .demo.sem .bd{ background:var(--sem-bg); }
+  .demo.hyb .hd{ background:var(--hyb); } .demo.hyb .bd{ background:var(--hyb-bg); }
+  .demo.rel .hd{ background:var(--rel); } .demo.rel .bd{ background:var(--rel-bg); }
+  .demo.stat .hd{ background:var(--stat); } .demo.stat .bd{ background:var(--stat-bg); }
+  .q{ font-size:11pt; font-weight:600; margin-bottom:6px; }
+  .steps{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; }
+  .steps span{ background:#fff; border:1px solid rgba(0,0,0,.1); border-radius:14px; padding:2px 9px; font-size:8.8pt; }
+  .steps span::after{ content:" →"; color:#9ca3af; } .steps span:last-child::after{ content:""; }
+  .answer{ background:#fff; border-radius:8px; padding:8px 10px; border:1px dashed rgba(0,0,0,.18); margin-top:6px; }
+  .answer b{ color:var(--navy); }
+  .diagram{ margin:8px 0 12px; break-inside:avoid; }
+  .diagram svg{ width:100%; height:auto; display:block; }
+  .cap{ font-size:8.8pt; color:var(--muted); text-align:center; margin-top:2px; }
+  .phase{ display:grid; grid-template-columns:90px 1fr; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); break-inside:avoid; }
+  .phase .pn{ background:var(--navy); color:#fff; border-radius:8px; text-align:center; padding:8px 4px; font-weight:700; font-size:9.5pt; }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<div class="cover">
+  <div style="font-size:10pt;letter-spacing:2px;opacity:.8;margin-bottom:8px">PLAN · RAG + MCP FOR QA KNOWLEDGE</div>
+  <h1>QA Knowledge Base<br>for LLM Question Answering</h1>
+  <div class="sub">How to store test cases, Jira tickets and source code in MongoDB as <b>Markdown + vectors + links</b>, and how an LLM uses MCP tools to answer simple and complex questions with real sources.</div>
+  <div class="chips">
+    <span class="chip">MongoDB Atlas Vector Search</span><span class="chip">Markdown chunks</span>
+    <span class="chip">Hybrid search ($rankFusion)</span><span class="chip">Graph links ($graphLookup)</span>
+    <span class="chip">MCP tools</span><span class="chip">Jira + Source code</span>
+  </div>
+  <div class="toc">
+    <div>1 · The big picture</div><div>2 · Three ways to find things</div>
+    <div>3 · The JSON format (5 types)</div><div>4 · How everything links</div>
+    <div>5 · Building the data (pipeline)</div><div>6 · Indexes in MongoDB</div>
+    <div>7 · MCP tools design</div><div>8 · How the LLM answers</div>
+    <div>9 · Demos: 5 question types</div><div>10 · Why this helps the LLM explain</div>
+    <div>11 · Step-by-step rollout</div><div>12 · Notes &amp; limits</div>
+  </div>
+  <div class="meta">Source data: ALL MODULES_TCs.xlsx (≈2,770 test cases, Firebird + MySQL tracks) · InteropsTeamFunctionalityDetails.xlsx (19 interop sheets) · Prepared 2 Oct 2026</div>
+</div>
+
+<!-- ================= 1 BIG PICTURE ================= -->
+<section>
+  <h2><span class="num">1</span>The big picture</h2>
+  <p class="lead">Data comes in on the top row. Questions go out on the bottom row. MongoDB sits in the middle and holds everything in <b>one collection</b> called <code>qa_knowledge</code>.</p>
+
+  <div class="diagram">
+  <svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="12">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+    </defs>
+    <text x="10" y="18" font-weight="700" fill="#1e3a5f" font-size="13">① INGEST (once, then on every change)</text>
+    <!-- sources -->
+    <rect x="10" y="32" width="150" height="40" rx="8" fill="#eaf1ff" stroke="#2563eb"/><text x="85" y="50" text-anchor="middle" font-weight="700" fill="#2563eb">Excel test cases</text><text x="85" y="65" text-anchor="middle" fill="#475569" font-size="10">ALL MODULES + Interop</text>
+    <rect x="10" y="82" width="150" height="40" rx="8" fill="#f1eaff" stroke="#7c3aed"/><text x="85" y="100" text-anchor="middle" font-weight="700" fill="#7c3aed">Jira tickets</text><text x="85" y="115" text-anchor="middle" fill="#475569" font-size="10">bugs, stories, comments</text>
+    <rect x="10" y="132" width="150" height="40" rx="8" fill="#e3f5f2" stroke="#0f766e"/><text x="85" y="150" text-anchor="middle" font-weight="700" fill="#0f766e">Source code (Git)</text><text x="85" y="165" text-anchor="middle" fill="#475569" font-size="10">functions, classes, commits</text>
+    <path d="M160,52 L215,95" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)" fill="none"/>
+    <path d="M160,102 L215,102" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+    <path d="M160,152 L215,110" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)" fill="none"/>
+    <!-- preprocess -->
+    <rect x="218" y="40" width="210" height="128" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="323" y="60" text-anchor="middle" font-weight="700" fill="#c2410c" font-size="13">Pre-process</text>
+    <text x="232" y="80" fill="#374151">1. Clean &amp; rename columns</text>
+    <text x="232" y="97" fill="#374151">2. Split into small docs</text>
+    <text x="232" y="114" fill="#374151">3. Pull entities (patient, HL7…)</text>
+    <text x="232" y="131" fill="#374151">4. Build links (relations)</text>
+    <text x="232" y="148" fill="#374151">5. Write Markdown + embed</text>
+    <path d="M428,104 L488,104" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+    <!-- mongo -->
+    <g>
+      <ellipse cx="600" cy="62" rx="108" ry="16" fill="#d9f2e1" stroke="#15803d"/>
+      <path d="M492,62 L492,232 A108,16 0 0 0 708,232 L708,62" fill="#e8f6ec" stroke="#15803d"/>
+      <ellipse cx="600" cy="62" rx="108" ry="16" fill="#d9f2e1" stroke="#15803d"/>
+      <text x="600" y="66" text-anchor="middle" font-weight="700" fill="#15803d">MongoDB</text>
+      <text x="600" y="98" text-anchor="middle" font-weight="700" fill="#1f2937">qa_knowledge</text>
+      <text x="600" y="118" text-anchor="middle" fill="#2563eb" font-size="11">test_case</text>
+      <text x="600" y="133" text-anchor="middle" fill="#15803d" font-size="11">feature · <tspan fill="#b45309">context</tspan></text>
+      <text x="600" y="148" text-anchor="middle" fill="#7c3aed" font-size="11">jira_ticket · <tspan fill="#0f766e">code_chunk</tspan></text>
+      <rect x="510" y="160" width="180" height="20" rx="5" fill="#fff" stroke="#15803d"/><text x="600" y="174" text-anchor="middle" font-size="10.5">Vector index (meaning)</text>
+      <rect x="510" y="184" width="180" height="20" rx="5" fill="#fff" stroke="#15803d"/><text x="600" y="198" text-anchor="middle" font-size="10.5">Search index (keywords)</text>
+      <rect x="510" y="208" width="180" height="20" rx="5" fill="#fff" stroke="#15803d"/><text x="600" y="222" text-anchor="middle" font-size="10.5">Normal indexes (filters, links)</text>
+    </g>
+    <!-- query row -->
+    <text x="10" y="282" font-weight="700" fill="#1e3a5f" font-size="13">② ASK (every question)</text>
+    <rect x="10" y="300" width="120" height="56" rx="10" fill="#f3f4f6" stroke="#6b7280"/><text x="70" y="324" text-anchor="middle" font-weight="700">User</text><text x="70" y="341" text-anchor="middle" fill="#475569" font-size="10">asks in plain English</text>
+    <path d="M130,320 L188,320" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+    <path d="M188,340 L130,340" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+    <text x="159" y="312" text-anchor="middle" fill="#6b7280" font-size="9.5">question</text><text x="159" y="356" text-anchor="middle" fill="#6b7280" font-size="9.5">answer</text>
+    <rect x="190" y="296" width="150" height="64" rx="10" fill="#f6ecff" stroke="#9333ea"/><text x="265" y="320" text-anchor="middle" font-weight="700" fill="#9333ea">LLM</text><text x="265" y="337" text-anchor="middle" fill="#475569" font-size="10">picks tools, reads results,</text><text x="265" y="350" text-anchor="middle" fill="#475569" font-size="10">writes the answer</text>
+    <path d="M340,320 L398,320" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+    <path d="M398,340 L340,340" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+    <text x="369" y="312" text-anchor="middle" fill="#6b7280" font-size="9.5">tool call</text><text x="369" y="356" text-anchor="middle" fill="#6b7280" font-size="9.5">results (md)</text>
+    <rect x="400" y="290" width="186" height="76" rx="10" fill="#e4f7fb" stroke="#0891b2"/><text x="493" y="310" text-anchor="middle" font-weight="700" fill="#0e7490">MCP server</text>
+    <text x="493" y="327" text-anchor="middle" fill="#475569" font-size="10">search_knowledge · get_document</text>
+    <text x="493" y="341" text-anchor="middle" fill="#475569" font-size="10">filter_test_cases · find_related</text>
+    <text x="493" y="355" text-anchor="middle" fill="#475569" font-size="10">find_by_entity · get_stats · trace_issue</text>
+    <path d="M586,312 L598,240" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)" fill="none"/>
+    <path d="M618,240 L590,336" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)" fill="none"/>
+    <text x="630" y="290" fill="#6b7280" font-size="9.5">MongoDB</text><text x="630" y="303" fill="#6b7280" font-size="9.5">queries</text>
+  </svg>
+  <div class="cap">Figure 1 — Ingest on top, ask on the bottom. The LLM never touches MongoDB directly; it only uses MCP tools.</div>
+  </div>
+
+  <h3>The one idea to remember</h3>
+  <div class="grid3">
+    <div class="card tc"><h4>Markdown = what the LLM reads</h4>Clean text with title, steps and expected result. The LLM can quote it word for word.</div>
+    <div class="card sem"><h4>Vector = how we find by meaning</h4>A list of numbers made from the Markdown. Similar meaning gives similar numbers.</div>
+    <div class="card rel"><h4>Fields + links = exact facts</h4>Status, owner, module and <code>relations[]</code> give exact filters and connections.</div>
+  </div>
+  <div class="callout">All three live in the <b>same JSON document</b>. One search can filter by fields, rank by meaning, and then follow links.</div>
+</section>
+
+<!-- ================= 2 THREE WAYS ================= -->
+<section>
+  <h2><span class="num">2</span>Three ways to find things</h2>
+  <p class="lead">Users ask different kinds of questions. Each kind needs a different search. The LLM picks the right one, or combines them.</p>
+
+  <div class="grid3">
+    <div class="card kw"><h4>🔑 Keyword search</h4>
+      <p>Finds <b>exact words</b>: codes, IDs and names.</p>
+      <p class="ex">"Show test INT-RxFill-Naproxen-2a"<br>"Tests for ADT-A08"</p>
+      <p><b>MongoDB:</b> <code>$search</code> (Atlas Search)</p></div>
+    <div class="card sem"><h4>🧠 Semantic search</h4>
+      <p>Finds <b>same meaning</b>, even when the words are different.</p>
+      <p class="ex">"What if the pharmacy can't give the full quantity?"<br>→ finds the "Partially Dispensed / Out of Stock" test</p>
+      <p><b>MongoDB:</b> <code>$vectorSearch</code></p></div>
+    <div class="card rel"><h4>🔗 Relationship search</h4>
+      <p>Follows <b>links</b> between docs: test → bug → code.</p>
+      <p class="ex">"This test failed. Which Jira bug and which code file are related?"</p>
+      <p><b>MongoDB:</b> <code>$graphLookup</code></p></div>
+  </div>
+
+  <h3>Plus two helpers</h3>
+  <div class="grid2">
+    <div class="card" style="background:var(--hyb-bg);border-color:#a5e3ef"><h4 style="color:var(--hyb)">⚡ Hybrid = keyword + semantic together</h4>
+      Both searches run, and their result lists are merged with <code>$rankFusion</code> (MongoDB 8.1+). This is best when a question has a code <i>and</i> an idea: <span class="ex">"ADT-A08 insurance update test in env 93"</span>.</div>
+    <div class="card" style="background:var(--stat-bg);border-color:#cfe5a8"><h4 style="color:var(--stat)">📊 Stats = counting</h4>
+      Plain <code>aggregate()</code> with <code>$group</code>. No vectors needed. <span class="ex">"How many MySQL tests failed per module?"</span></div>
+  </div>
+
+  <h3>Which search for which question?</h3>
+  <table>
+    <tr><th style="width:38%">If the question…</th><th style="width:22%">Use</th><th>Example</th></tr>
+    <tr><td>has an ID, code, name or exact phrase</td><td>Keyword</td><td>"Testcase - 2 RxChange steps"</td></tr>
+    <tr><td>describes a situation in normal words</td><td>Semantic</td><td>"How do we test a prescription being cancelled?"</td></tr>
+    <tr><td>has both a code and an idea</td><td>Hybrid</td><td>"VXU message when vaccine is given"</td></tr>
+    <tr><td>asks "why", "what's connected" or "what's impacted"</td><td>Relationship</td><td>"What breaks if CancelRx sending fails?"</td></tr>
+    <tr><td>asks "how many", "which most" or "% passed"</td><td>Stats</td><td>"Pass rate of Billing on Firebird"</td></tr>
+    <tr><td>filters by status, owner, module or env</td><td>Exact filter</td><td>"Marcelo's failed tests"</td></tr>
+  </table>
+</section>
+
+<!-- ================= 3 JSON FORMAT ================= -->
+<section>
+  <h2><span class="num">3</span>The JSON format (5 document types)</h2>
+  <p class="lead">There is one collection with a <code>doc_type</code> field. Every type shares the same "common part", so one search covers everything.</p>
+
+  <div class="grid3" style="grid-template-columns:repeat(5,1fr);gap:6px">
+    <div class="card tc" style="padding:7px"><h4>test_case</h4><span style="font-size:8.6pt">one Excel test row</span></div>
+    <div class="card feat" style="padding:7px"><h4>feature</h4><span style="font-size:8.6pt">eRx, ADT, eFax…</span></div>
+    <div class="card ctx" style="padding:7px"><h4>context</h4><span style="font-size:8.6pt">test data, config, preconditions</span></div>
+    <div class="card jira" style="padding:7px"><h4>jira_ticket</h4><span style="font-size:8.6pt">one bug or story</span></div>
+    <div class="card code" style="padding:7px"><h4>code_chunk</h4><span style="font-size:8.6pt">one function or class</span></div>
+  </div>
+
+  <h3>The common part (every document has these)</h3>
+  <table>
+    <tr><th style="width:24%">Field</th><th>What it is for</th></tr>
+    <tr><td><code>_id</code></td><td>A stable, readable ID such as <code>TC:INTEROP:eRx:R27</code>. Links point to it.</td></tr>
+    <tr><td><code>doc_type</code></td><td>Says which of the 5 types this is, so searches can filter by type.</td></tr>
+    <tr><td><code>source</code></td><td>Where it came from: sheet and row, Jira key, or file path. Used for <b>citations</b>.</td></tr>
+    <tr><td><code>hierarchy.breadcrumb</code></td><td>Where it lives, e.g. <i>Interop &gt; eRx &gt; Testcase - 1 &gt; CancelRx</i>.</td></tr>
+    <tr><td><code>entities[]</code></td><td>Typed "things" mentioned (patient, drug, HL7 message, file). These join docs across sources.</td></tr>
+    <tr><td><code>relations[]</code></td><td>Arrows to other docs: BELONGS_TO, DEPENDS_ON, AFFECTS, FIXED_BY…</td></tr>
+    <tr><td><code>search.keywords</code></td><td>Exact words for keyword search, including spelling variants found in the sheets.</td></tr>
+    <tr><td><code>content_md</code></td><td>Clean Markdown. This is what the LLM reads and what gets embedded.</td></tr>
+    <tr><td><code>embedding</code></td><td>The vector plus a hash of the text, so we re-embed only when the text changes.</td></tr>
+  </table>
+
+  <div class="jsonhead"><span class="badge b-tc">TEST_CASE</span> Real example: eRx sheet, row 27 (it failed)</div>
+<pre class="json">{
+  "_id": "TC:INTEROP:eRx:R27",
+  "doc_type": "test_case",
+  "schema_version": "1.0",
+
+  "source": {                                   // where it came from (for citations)
+    "workbook": "InteropsTeamFunctionalityDetails",
+    "sheet": "eRx",
+    "row": 27,
+    "raw_headers": { "title": "Test Scenario", "steps": "Steps", "expected": "Excepted Result" },
+    "content_hash": "sha256:9f2c...",
+    "ingested_at": "2026-10-02T10:30:00Z"
+  },
+
+  "hierarchy": {                                // where it lives
+    "domain": "Interop",
+    "module": "eRx",
+    "section": "CancelRx",
+    "group_id": "Testcase - 1",
+    "sequence_no": 26,
+    "breadcrumb": "Interop > eRx > Testcase - 1 > CancelRx"
+  },
+
+  "title": "Validate - RxCancelResponse to OP",
+  "preconditions": [],
+  "steps": [                                    // array, so the LLM can say "step 3"
+    "In OP > e-prescribe > Cancelled/Denied cancel tab, double click on the CancelResponse transaction.",
+    "Or click on the message icon of that transaction.",
+    "It opens the XML.",
+    "Validate all the fields of CancelRx request are populated correctly: Denial Reason, Code & Type."
+  ],
+  "expected_result": "All the fields must be populated correctly in the XML of the CancelResponse.",
+
+  "context_ref": "CTX:INTEROP:eRx:TESTCASE-1",  // full test data stored once
+  "context_snapshot": {                         // small copy so the doc stands alone
+    "patient_id": "118",
+    "medication": "Augmented Betamethasone 0.05% Topical Ointment",
+    "pharmacy": "Shollenberger Pharmacy",
+    "substance_class": "NON_CONTROLLED"
+  },
+
+  "entities": [                                 // typed things, used to join docs
+    { "type": "patient",      "value": "118" },
+    { "type": "medication",   "value": "Augmented Betamethasone 0.05% Topical Ointment" },
+    { "type": "message_type", "value": "CancelRxResponse", "standard": "NCPDP SCRIPT" },
+    { "type": "system",       "value": "OP" },
+    { "type": "system",       "value": "Surescripts" }
+  ],
+  "environments": ["ID1", "ID93", "ID106"],
+
+  "runs": [                                     // every result, one per track / cycle
+    { "track": "default", "owner": null, "status": "FAIL", "status_raw": "Fail",
+      "comment": null, "executed_at": null, "recorded_at": "2026-10-02T10:30:00Z" }
+  ],
+
+  "relations": [                                // arrows to other documents
+    { "type": "BELONGS_TO",    "target": "FEAT:INTEROP:eRx" },
+    { "type": "USES_CONTEXT",  "target": "CTX:INTEROP:eRx:TESTCASE-1" },
+    { "type": "DEPENDS_ON",    "target": "TC:INTEROP:eRx:R26", "why": "CancelResponse must be sent first" },
+    { "type": "SAME_SCENARIO", "target": "TC:INTEROP:eRx:R57", "why": "same check, patient 123" }
+  ],
+
+  "quality": { "flags": ["HEADER_TYPO_FIXED"], "missing_fields": [] },
+
+  "search": {
+    "keywords": ["RxCancelResponse", "CancelRx", "XML", "Denial Reason", "Surescripts", "118"],
+    "aliases":  ["Cancel Response", "CanelResponse", "Cancel Rx"]
+  },
+
+  "content_md": "# eRx > Testcase - 1 > CancelRx\n## Validate - RxCancelResponse to OP\n**Context:** Patient 118, Augmented Betamethasone, Shollenberger Pharmacy\n**Depends on:** Send - RxCancelResponse to OP\n### Steps\n1. ...\n### Expected\nAll the fields must be populated correctly ...",
+
+  "embedding": { "model": "&lt;your-embedding-model&gt;", "dims": 1536,
+                 "text_hash": "sha256:41ab...", "vector": [0.0142, -0.0418, "..."] }
+}</pre>
+
+  <div class="callout warn"><b>Status is NOT in <code>content_md</code> or the vector.</b> Status changes every test cycle. Keeping it only in <code>runs[]</code> means a status change never forces a re-embed.</div>
+
+  <div class="jsonhead"><span class="badge b-tc">TEST_CASE</span> Same format, ALL MODULES row (FrontDesk row 3). Only these parts differ.</div>
+<pre class="json">{
+  "_id": "TC:CORE:FrontDesk:R3",
+  "hierarchy": { "domain": "Core", "module": "FrontDesk",
+                 "section": "Login: Show a popup when the user enters the wrong password",
+                 "breadcrumb": "Core > FrontDesk > Login" },
+  "title": "Verify warning popup shows when user logs in with wrong username and password",
+  "attributes": { "tc_source": "Insprint", "is_high_level": true },
+  "runs": [                                     // two databases = two runs of the same test
+    { "track": "Firebird", "scope": "HIGH_LEVEL",      "owner": "Marcelo", "status": "NOT_RUN" },
+    { "track": "MySQL",    "scope": "FULL_REGRESSION", "owner": "Marcelo", "status": "NOT_RUN" }
+  ],
+  "context_ref": null,
+  "environments": []
+}</pre>
+</section>
+
+<section>
+  <div class="jsonhead" style="margin-top:0"><span class="badge b-feat">FEATURE</span> One per row of the <i>IntropsFeatures</i> sheet</div>
+<pre class="json">{
+  "_id": "FEAT:INTEROP:HUB_ADT",
+  "doc_type": "feature",
+  "name": "ADT",
+  "parent": "FEAT:INTEROP:HUB",
+  "test_sheet": "HUB_ADT&SIU",
+  "environments": ["ID93", "ID8", "ID10"],
+  "directions": ["INBOUND", "OUTBOUND"],
+  "sub_features": [
+    { "code": "ADT_A04", "action": "Patient Creation" },
+    { "code": "ADT_A08", "action": "Patient Updation" },
+    { "code": "SIU_S12", "action": "Appointment Creation" }
+  ],
+  "doc_links": [{ "title": "ADT_TestingDocForAllEnv", "url": "https://docs.google.com/..." }],
+  "content_md": "# Feature: ADT (HUB)\nRuns in ID93, ID8, ID10 ...",
+  "embedding": { "...": "..." }
+}</pre>
+
+  <div class="jsonhead"><span class="badge b-ctx">CONTEXT</span> Parent blocks, preconditions and config, stored once</div>
+<pre class="json">{
+  "_id": "CTX:INTEROP:eRx:TESTCASE-1",
+  "doc_type": "context",
+  "context_kind": "TEST_DATA",                  // or PRECONDITION / CONFIGURATION
+  "applies_to": { "sheet": "eRx", "rows": [3, 27] },
+  "data": {
+    "patient_id": "118", "patient_name": "Zachary Delaplaine",
+    "pharmacy": "Shollenberger Pharmacy", "primary_dx": "Psoriasis",
+    "medication": "Augmented Betamethasone 0.05% Topical Ointment",
+    "quantity": 14.555, "unit": "Gram", "refills": 3, "substance_class": "NON_CONTROLLED"
+  },
+  "content_md": "# Test data: eRx Testcase - 1\n- Patient 118 ...",
+  "embedding": { "...": "..." }
+}</pre>
+
+  <div class="jsonhead"><span class="badge b-jira">JIRA_TICKET</span> One per ticket <span class="badge b-ex">EXAMPLE DATA</span></div>
+<pre class="json">{
+  "_id": "JIRA:OPI-2045",
+  "doc_type": "jira_ticket",
+  "source": { "system": "jira", "key": "OPI-2045", "url": "https://yourcompany.atlassian.net/browse/OPI-2045",
+              "updated_at": "2026-09-28T14:02:00Z" },
+  "issue_type": "Bug",
+  "status": "In Progress",
+  "priority": "High",
+  "summary": "CancelRx response XML missing Denial Reason Code",
+  "components": ["eRx"],
+  "fix_version": "Release 2.1",
+  "assignee": "dev.team.erx",
+  "labels": ["surescripts", "cancelrx"],
+  "entities": [
+    { "type": "message_type", "value": "CancelRxResponse" },
+    { "type": "patient",      "value": "118" }
+  ],
+  "relations": [
+    { "type": "BELONGS_TO", "target": "FEAT:INTEROP:eRx" },
+    { "type": "AFFECTS",    "target": "TC:INTEROP:eRx:R27", "how": "QA linked the failed test" },
+    { "type": "FIXED_BY",   "target": "CODE:op-erx:src/Surescripts/CancelRxResponseParser.cs#Parse",
+      "how": "commit message mentions OPI-2045" }
+  ],
+  "content_md": "# OPI-2045 · CancelRx response XML missing Denial Reason Code\n**Status:** In Progress · **Priority:** High\n## Description\n...\n## Comments (summary)\n- QA: fails on ID93 with patient 118 ...",
+  "embedding": { "...": "..." }
+}</pre>
+
+  <div class="jsonhead"><span class="badge b-code">CODE_CHUNK</span> One per function or class <span class="badge b-ex">EXAMPLE DATA</span></div>
+<pre class="json">{
+  "_id": "CODE:op-erx:src/Surescripts/CancelRxResponseParser.cs#Parse",
+  "doc_type": "code_chunk",
+  "source": { "repo": "op-erx", "path": "src/Surescripts/CancelRxResponseParser.cs",
+              "lines": [42, 118], "commit": "a91f3c2", "branch": "main" },
+  "language": "csharp",
+  "symbol": { "kind": "method", "name": "Parse", "class": "CancelRxResponseParser" },
+  "summary": "Reads a Surescripts CancelRxResponse XML and saves denial reason, code and type on the Rx.",
+  "entities": [
+    { "type": "message_type", "value": "CancelRxResponse" },
+    { "type": "xml_field",    "value": "DenialReasonCode" }
+  ],
+  "relations": [
+    { "type": "IMPLEMENTS", "target": "FEAT:INTEROP:eRx" },
+    { "type": "CALLS",      "target": "CODE:op-erx:src/Rx/RxRepository.cs#SaveCancelStatus" },
+    { "type": "TESTED_BY",  "target": "TC:INTEROP:eRx:R27" }
+  ],
+  "content_md": "# CancelRxResponseParser.Parse\n**What it does:** ...\n```csharp\npublic CancelResult Parse(XDocument xml) { ... }\n```",
+  "embedding": { "...": "..." }
+}</pre>
+</section>
+
+<!-- ================= 4 RELATIONSHIPS ================= -->
+<section>
+  <h2><span class="num">4</span>How everything links</h2>
+  <p class="lead">Each arrow is one entry in a document's <code>relations[]</code>. Once these arrows exist, the LLM can walk from a failed test to the bug and then to the code.</p>
+
+  <div class="diagram">
+  <svg viewBox="0 0 720 430" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="11.5">
+    <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+    <!-- feature -->
+    <rect x="270" y="14" width="180" height="46" rx="23" fill="#e8f6ec" stroke="#15803d" stroke-width="2"/>
+    <text x="360" y="34" text-anchor="middle" font-weight="700" fill="#15803d">FEATURE · eRx</text><text x="360" y="50" text-anchor="middle" fill="#475569" font-size="10">envs ID1, ID93, ID106</text>
+    <!-- tcs -->
+    <rect x="10" y="150" width="160" height="54" rx="9" fill="#eaf1ff" stroke="#2563eb" stroke-width="2"/>
+    <text x="90" y="171" text-anchor="middle" font-weight="700" fill="#2563eb">TC R26 · Send Cancel</text><text x="90" y="188" text-anchor="middle" font-size="10" fill="#475569">Pass · comment "Cancel - Pending"</text>
+    <rect x="280" y="150" width="160" height="54" rx="9" fill="#eaf1ff" stroke="#dc2626" stroke-width="2.5"/>
+    <text x="360" y="171" text-anchor="middle" font-weight="700" fill="#2563eb">TC R27 · Validate Cancel</text><text x="360" y="188" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">FAIL</text>
+    <rect x="550" y="150" width="160" height="54" rx="9" fill="#eaf1ff" stroke="#2563eb" stroke-width="2"/>
+    <text x="630" y="171" text-anchor="middle" font-weight="700" fill="#2563eb">TC R57 · Validate Cancel</text><text x="630" y="188" text-anchor="middle" font-size="10" fill="#475569">Testcase - 2 · patient 123</text>
+    <!-- context & entity -->
+    <rect x="10" y="300" width="160" height="54" rx="9" fill="#fff4e2" stroke="#b45309" stroke-width="2"/>
+    <text x="90" y="321" text-anchor="middle" font-weight="700" fill="#b45309">CONTEXT · Testcase - 1</text><text x="90" y="338" text-anchor="middle" font-size="10" fill="#475569">patient, drug, pharmacy</text>
+    <rect x="33" y="390" width="114" height="28" rx="14" fill="#f3f4f6" stroke="#6b7280"/><text x="90" y="408" text-anchor="middle" font-size="10.5">entity: patient 118</text>
+    <!-- jira & code -->
+    <rect x="280" y="300" width="160" height="54" rx="9" fill="#f1eaff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="360" y="321" text-anchor="middle" font-weight="700" fill="#7c3aed">JIRA OPI-2045 (example)</text><text x="360" y="338" text-anchor="middle" font-size="10" fill="#475569">Bug · In Progress</text>
+    <rect x="550" y="300" width="160" height="54" rx="9" fill="#e3f5f2" stroke="#0f766e" stroke-width="2"/>
+    <text x="630" y="321" text-anchor="middle" font-weight="700" fill="#0f766e">CODE (example)</text><text x="630" y="338" text-anchor="middle" font-size="10" fill="#475569">CancelRxResponseParser.Parse</text>
+    <!-- edges -->
+    <path d="M90,150 L300,60" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#a2)"/>
+    <path d="M360,150 L360,62" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+    <path d="M630,150 L420,60" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#a2)"/>
+    <text x="372" y="110" fill="#15803d" font-size="10" font-weight="700">BELONGS_TO</text>
+    <path d="M280,177 L172,177" stroke="#db2777" stroke-width="2" marker-end="url(#a2)"/>
+    <text x="190" y="170" fill="#db2777" font-size="10" font-weight="700">DEPENDS_ON</text>
+    <path d="M440,177 L548,177" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a2)"/>
+    <text x="451" y="170" fill="#475569" font-size="10" font-weight="700">SAME_SCENARIO</text>
+    <path d="M90,204 L90,298" stroke="#b45309" stroke-width="1.5" marker-end="url(#a2)"/>
+    <path d="M330,204 L140,298" stroke="#b45309" stroke-width="1.5" fill="none" marker-end="url(#a2)"/>
+    <text x="210" y="262" fill="#b45309" font-size="10" font-weight="700">USES_CONTEXT</text>
+    <path d="M90,354 L90,388" stroke="#6b7280" stroke-width="1.3" marker-end="url(#a2)"/>
+    <path d="M360,300 L360,206" stroke="#7c3aed" stroke-width="2" marker-end="url(#a2)"/>
+    <text x="366" y="262" fill="#7c3aed" font-size="10" font-weight="700">AFFECTS</text>
+    <path d="M440,327 L548,327" stroke="#7c3aed" stroke-width="2" marker-end="url(#a2)"/>
+    <text x="466" y="320" fill="#7c3aed" font-size="10" font-weight="700">FIXED_BY</text>
+    <path d="M710,327 H716 V37 H452" stroke="#0f766e" stroke-width="1.5" fill="none" marker-end="url(#a2)"/>
+    <text x="560" y="30" fill="#0f766e" font-size="10" font-weight="700">IMPLEMENTS</text>
+    <path d="M580,300 L420,206" stroke="#0f766e" stroke-width="1.3" stroke-dasharray="5 4" fill="none" marker-end="url(#a2)"/>
+    <text x="470" y="262" fill="#0f766e" font-size="10" font-weight="700">TESTED_BY</text>
+  </svg>
+  <div class="cap">Figure 2 — A small slice of the graph. Real data: TC R26/R27/R57 and Testcase - 1. Jira and code nodes are examples.</div>
+  </div>
+
+  <h3>How the links are made (automatically)</h3>
+  <table>
+    <tr><th style="width:24%">Link</th><th style="width:38%">Rule</th><th>Example</th></tr>
+    <tr><td>BELONGS_TO</td><td>Sheet name or Jira component matches a feature</td><td>sheet "eRx" → FEAT:eRx</td></tr>
+    <tr><td>USES_CONTEXT</td><td>Row sits under a parent block or precondition row</td><td>R27 is under "Testcase - 1"</td></tr>
+    <tr><td>DEPENDS_ON</td><td>Within a group, "Validate X" follows "Send X"</td><td>R27 depends on R26</td></tr>
+    <tr><td>SAME_SCENARIO</td><td>Same title in another group (different test data)</td><td>R27 ↔ R57</td></tr>
+    <tr><td>AFFECTS</td><td>Jira mentions a TC id or title, or QA links it</td><td>OPI-2045 → R27</td></tr>
+    <tr><td>FIXED_BY</td><td>A commit message contains the Jira key; changed functions get the link</td><td>"OPI-2045 fix denial code"</td></tr>
+    <tr><td>IMPLEMENTS / TESTED_BY</td><td>Code and tests share the same entity (e.g. message type CancelRxResponse)</td><td>Parser ↔ R27</td></tr>
+  </table>
+  <div class="callout good"><b>Shared entities are the "glue".</b> Patient 118 appears in eRx <i>and</i> ePA. <code>CancelRxResponse</code> appears in a test, a ticket and a code file. One query on <code>entities.value</code> finds all of them.</div>
+</section>
+
+<!-- ================= 5 PIPELINE ================= -->
+<section>
+  <h2><span class="num">5</span>Building the data (pipeline)</h2>
+  <p class="lead">One script per source. They all write the same JSON shape into the same collection.</p>
+
+  <div class="diagram">
+  <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="11">
+    <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+    <!-- lanes -->
+    <g>
+      <rect x="0" y="8" width="720" height="84" rx="10" fill="#eaf1ff"/>
+      <text x="12" y="28" font-weight="700" fill="#2563eb" font-size="12">EXCEL</text>
+      <rect x="12" y="38" width="100" height="44" rx="7" fill="#fff" stroke="#2563eb"/><text x="62" y="57" text-anchor="middle">Read sheets</text><text x="62" y="72" text-anchor="middle" font-size="9.5" fill="#64748b">skip Overview/Split</text>
+      <rect x="128" y="38" width="100" height="44" rx="7" fill="#fff" stroke="#2563eb"/><text x="178" y="57" text-anchor="middle">Rename columns</text><text x="178" y="72" text-anchor="middle" font-size="9.5" fill="#64748b">"Excepted"→expected</text>
+      <rect x="244" y="38" width="100" height="44" rx="7" fill="#fff" stroke="#2563eb"/><text x="294" y="57" text-anchor="middle">Find sections</text><text x="294" y="72" text-anchor="middle" font-size="9.5" fill="#64748b">+ parent blocks</text>
+      <rect x="360" y="38" width="100" height="44" rx="7" fill="#fff" stroke="#2563eb"/><text x="410" y="57" text-anchor="middle">Clean status</text><text x="410" y="72" text-anchor="middle" font-size="9.5" fill="#64748b">"pass "→PASS</text>
+      <rect x="476" y="38" width="100" height="44" rx="7" fill="#fff" stroke="#2563eb"/><text x="526" y="57" text-anchor="middle">Build runs[]</text><text x="526" y="72" text-anchor="middle" font-size="9.5" fill="#64748b">Firebird + MySQL</text>
+      <path d="M112,60 L126,60" stroke="#64748b" marker-end="url(#a3)"/><path d="M228,60 L242,60" stroke="#64748b" marker-end="url(#a3)"/><path d="M344,60 L358,60" stroke="#64748b" marker-end="url(#a3)"/><path d="M460,60 L474,60" stroke="#64748b" marker-end="url(#a3)"/>
+      <path d="M576,60 L600,140" stroke="#64748b" marker-end="url(#a3)" fill="none"/>
+    </g>
+    <g>
+      <rect x="0" y="104" width="590" height="70" rx="10" fill="#f1eaff"/>
+      <text x="12" y="124" font-weight="700" fill="#7c3aed" font-size="12">JIRA</text>
+      <rect x="60" y="114" width="120" height="50" rx="7" fill="#fff" stroke="#7c3aed"/><text x="120" y="134" text-anchor="middle">Jira REST API</text><text x="120" y="150" text-anchor="middle" font-size="9.5" fill="#64748b">updated since last run</text>
+      <rect x="200" y="114" width="140" height="50" rx="7" fill="#fff" stroke="#7c3aed"/><text x="270" y="134" text-anchor="middle">Summarize comments</text><text x="270" y="150" text-anchor="middle" font-size="9.5" fill="#64748b">keep it short</text>
+      <rect x="360" y="114" width="140" height="50" rx="7" fill="#fff" stroke="#7c3aed"/><text x="430" y="134" text-anchor="middle">Find TC ids &amp; keys</text><text x="430" y="150" text-anchor="middle" font-size="9.5" fill="#64748b">→ AFFECTS links</text>
+      <path d="M180,139 L198,139" stroke="#64748b" marker-end="url(#a3)"/><path d="M340,139 L358,139" stroke="#64748b" marker-end="url(#a3)"/><path d="M500,139 L598,150" stroke="#64748b" marker-end="url(#a3)"/>
+    </g>
+    <g>
+      <rect x="0" y="186" width="590" height="70" rx="10" fill="#e3f5f2"/>
+      <text x="12" y="206" font-weight="700" fill="#0f766e" font-size="12">CODE</text>
+      <rect x="60" y="196" width="120" height="50" rx="7" fill="#fff" stroke="#0f766e"/><text x="120" y="216" text-anchor="middle">Git changed files</text><text x="120" y="232" text-anchor="middle" font-size="9.5" fill="#64748b">on each merge</text>
+      <rect x="200" y="196" width="140" height="50" rx="7" fill="#fff" stroke="#0f766e"/><text x="270" y="216" text-anchor="middle">Split by function</text><text x="270" y="232" text-anchor="middle" font-size="9.5" fill="#64748b">not by line count</text>
+      <rect x="360" y="196" width="140" height="50" rx="7" fill="#fff" stroke="#0f766e"/><text x="430" y="216" text-anchor="middle">LLM writes summary</text><text x="430" y="232" text-anchor="middle" font-size="9.5" fill="#64748b">+ Jira keys from commits</text>
+      <path d="M180,221 L198,221" stroke="#64748b" marker-end="url(#a3)"/><path d="M340,221 L358,221" stroke="#64748b" marker-end="url(#a3)"/><path d="M500,221 L598,170" stroke="#64748b" marker-end="url(#a3)"/>
+    </g>
+    <!-- common -->
+    <rect x="600" y="104" width="120" height="152" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="660" y="124" text-anchor="middle" font-weight="700" fill="#c2410c">Common steps</text>
+    <text x="612" y="146">• extract entities</text><text x="612" y="164">• build relations</text><text x="612" y="182">• write content_md</text><text x="612" y="200">• hash → embed</text><text x="612" y="218">  (only if changed)</text><text x="612" y="236">• upsert by _id</text>
+    <path d="M660,256 L660,284" stroke="#64748b" stroke-width="1.6" marker-end="url(#a3)"/>
+    <text x="716" y="296" text-anchor="end" font-weight="700" fill="#15803d">→ MongoDB qa_knowledge</text>
+  </svg>
+  <div class="cap">Figure 3 — Three input lanes feed the same common steps.</div>
+  </div>
+
+  <div class="grid2">
+    <div class="card jira"><h4>Storing Jira tickets: simple rules</h4>
+      <ul>
+        <li><b>One document per ticket.</b> Summary, description and a short comment summary go in <code>content_md</code>.</li>
+        <li>Status, priority, assignee and fix version are <b>fields</b>, not embedded text.</li>
+        <li>Fetch only tickets <b>updated since the last run</b> (JQL <code>updated &gt;= -1d</code>).</li>
+        <li>If a comment thread is very long, split it into a second chunk with the same <code>source.key</code>.</li>
+      </ul></div>
+    <div class="card code"><h4>Storing source code: simple rules</h4>
+      <ul>
+        <li><b>One document per function or class.</b> Never cut code in the middle of a function.</li>
+        <li>Add a <b>plain-English summary</b> written by the LLM. Questions are in English, so the summary helps semantic search a lot.</li>
+        <li>Store <code>commit</code> and <code>lines</code> so answers can point to <code>file:line</code>.</li>
+        <li>Re-index only files changed in each merge. Remove docs for deleted files.</li>
+      </ul></div>
+  </div>
+</section>
+
+<!-- ================= 6 INDEXES ================= -->
+<section>
+  <h2><span class="num">6</span>Indexes in MongoDB</h2>
+  <p class="lead">Three kinds of index on one collection. Each one powers one kind of search.</p>
+
+  <div class="jsonhead"><span class="badge" style="background:var(--sem)">VECTOR INDEX</span> for <code>$vectorSearch</code></div>
+<pre class="json">{
+  "fields": [
+    { "type": "vector", "path": "embedding.vector", "numDimensions": 1536, "similarity": "cosine" },
+    { "type": "filter", "path": "doc_type" },
+    { "type": "filter", "path": "hierarchy.module" },
+    { "type": "filter", "path": "environments" },
+    { "type": "filter", "path": "runs.status" }
+  ]
+}</pre>
+
+  <div class="jsonhead"><span class="badge" style="background:var(--kw)">SEARCH INDEX</span> for <code>$search</code> (keywords)</div>
+<pre class="json">{
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "title":           { "type": "string" },
+      "search.keywords": { "type": "string", "analyzer": "lucene.keyword" },
+      "search.aliases":  { "type": "string" },
+      "content_md":      { "type": "string" },
+      "entities":        { "type": "document", "fields": { "value": { "type": "string" } } }
+    }
+  }
+}</pre>
+
+  <div class="jsonhead"><span class="badge" style="background:var(--feat)">NORMAL INDEXES</span> for filters, stats and links</div>
+<pre class="mongo">db.qa_knowledge.createIndex({ doc_type: 1, "hierarchy.module": 1 })
+db.qa_knowledge.createIndex({ "runs.track": 1, "runs.status": 1 })
+db.qa_knowledge.createIndex({ "relations.target": 1 })        // fast $graphLookup
+db.qa_knowledge.createIndex({ "entities.type": 1, "entities.value": 1 })
+db.qa_knowledge.createIndex({ "source.key": 1 })              // Jira key lookup</pre>
+</section>
+
+<!-- ================= 7 MCP TOOLS ================= -->
+<section>
+  <h2><span class="num">7</span>MCP tools design</h2>
+  <p class="lead">The MCP server is a small program between the LLM and MongoDB. It offers a few <b>clear, read-only tools</b>. The LLM chooses which tool to call and with what inputs.</p>
+
+  <table>
+    <tr><th style="width:20%">Tool</th><th style="width:30%">Inputs</th><th style="width:25%">Runs in MongoDB</th><th>Use it for</th></tr>
+    <tr><td><b>search_knowledge</b></td><td>query, mode (keyword / semantic / hybrid), doc_types, filters, limit</td><td>$search · $vectorSearch · $rankFusion</td><td>Finding anything by words or meaning</td></tr>
+    <tr><td><b>get_document</b></td><td>id, include (context, feature, runs)</td><td>find + $lookup</td><td>Reading one doc in full, with its parent context</td></tr>
+    <tr><td><b>filter_test_cases</b></td><td>module, section, status, track, owner, environment</td><td>find()</td><td>Exact lists ("Marcelo's MySQL fails")</td></tr>
+    <tr><td><b>find_related</b></td><td>id, relation_types, depth (max 3)</td><td>$graphLookup</td><td>"What is connected to this?"</td></tr>
+    <tr><td><b>find_by_entity</b></td><td>type, value</td><td>find on entities</td><td>Everything about patient 118 or ADT_A08</td></tr>
+    <tr><td><b>get_stats</b></td><td>group_by, filters</td><td>aggregate $group</td><td>Counts and pass rates</td></tr>
+    <tr><td><b>trace_issue</b></td><td>start_id (TC id or Jira key)</td><td>several of the above</td><td>One-shot bundle: test + bug + code + context</td></tr>
+  </table>
+
+  <div class="jsonhead"><span class="badge" style="background:var(--hyb)">MCP TOOL SCHEMA</span> What the LLM sees for <code>search_knowledge</code></div>
+<pre class="json">{
+  "name": "search_knowledge",
+  "description": "Search test cases, features, context, Jira tickets and code. Use mode 'keyword' for IDs, codes and exact names; 'semantic' for questions in normal words; 'hybrid' when the question has both. Returns short Markdown snippets with ids for citation.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "query":     { "type": "string" },
+      "mode":      { "type": "string", "enum": ["keyword", "semantic", "hybrid"], "default": "hybrid" },
+      "doc_types": { "type": "array", "items": { "enum": ["test_case", "feature", "context", "jira_ticket", "code_chunk"] } },
+      "filters": {
+        "type": "object",
+        "properties": {
+          "module":      { "type": "string" },
+          "environment": { "type": "string" },
+          "status":      { "enum": ["PASS", "FAIL", "BLOCKED", "NA", "NOT_RUN"] },
+          "track":       { "enum": ["Firebird", "MySQL", "default"] }
+        }
+      },
+      "limit": { "type": "integer", "default": 8, "maximum": 20 }
+    },
+    "required": ["query"]
+  }
+}</pre>
+
+  <div class="jsonhead">What a tool returns (small and easy to cite)</div>
+<pre class="json">{
+  "results": [
+    { "id": "TC:INTEROP:eRx:R39", "doc_type": "test_case", "score": 0.91,
+      "breadcrumb": "Interop > eRx > Testcase - 2 > RxFill",
+      "title": "Send - RxFill request to OP - 2a",
+      "snippet_md": "...Status is **Partially Dispensed** ... Reason Code is **Out of Stock**...",
+      "latest_status": { "track": "default", "status": "PASS" },
+      "cite": "InteropsTeamFunctionalityDetails › eRx › row 39" }
+  ],
+  "next_hint": "Call get_document(id) for full steps, or find_related(id) for links."
+}</pre>
+
+  <div class="callout"><b>Design rules for the tools</b>
+    <ul>
+      <li><b>Few tools with clear names.</b> The descriptions tell the LLM <i>when</i> to use each one.</li>
+      <li><b>Never return vectors.</b> Return ids, breadcrumbs, short Markdown and a <code>cite</code> string.</li>
+      <li><b>Limit the size</b> (default 8 results, graph depth at most 3) so the LLM's context stays clean.</li>
+      <li><b>Enums for filters.</b> The LLM can't invent a status like "Passed!!".</li>
+      <li><b>Read-only.</b> The tools never write to the database.</li>
+    </ul></div>
+</section>
+
+<!-- ================= 8 HOW LLM ANSWERS ================= -->
+<section class="first" style="margin-top:18px">
+  <h2><span class="num">8</span>How the LLM answers a question</h2>
+  <p class="lead">Every question goes through the same five steps.</p>
+
+  <div class="diagram">
+  <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="11.5">
+    <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+    <rect x="260" y="8" width="200" height="40" rx="20" fill="#f3f4f6" stroke="#6b7280"/><text x="360" y="33" text-anchor="middle" font-weight="700">① User question</text>
+    <path d="M360,48 L360,70" stroke="#64748b" stroke-width="1.6" marker-end="url(#a4)"/>
+    <polygon points="360,72 470,107 360,142 250,107" fill="#f6ecff" stroke="#9333ea" stroke-width="1.5"/>
+    <text x="360" y="104" text-anchor="middle" font-weight="700" fill="#7e22ce">② What kind</text><text x="360" y="119" text-anchor="middle" font-weight="700" fill="#7e22ce">of question?</text>
+    <!-- branches -->
+    <g font-size="10.5">
+      <rect x="6" y="176" width="130" height="50" rx="8" fill="#fff0e6" stroke="#ea580c"/><text x="71" y="196" text-anchor="middle" font-weight="700" fill="#c2410c">Exact words</text><text x="71" y="213" text-anchor="middle">search · keyword</text>
+      <rect x="148" y="176" width="130" height="50" rx="8" fill="#f6ecff" stroke="#9333ea"/><text x="213" y="196" text-anchor="middle" font-weight="700" fill="#7e22ce">Meaning</text><text x="213" y="213" text-anchor="middle">search · semantic</text>
+      <rect x="290" y="176" width="140" height="50" rx="8" fill="#e4f7fb" stroke="#0891b2"/><text x="360" y="196" text-anchor="middle" font-weight="700" fill="#0e7490">Both</text><text x="360" y="213" text-anchor="middle">search · hybrid</text>
+      <rect x="442" y="176" width="130" height="50" rx="8" fill="#fde9f3" stroke="#db2777"/><text x="507" y="196" text-anchor="middle" font-weight="700" fill="#be185d">Connections</text><text x="507" y="213" text-anchor="middle">find_related / trace</text>
+      <rect x="584" y="176" width="130" height="50" rx="8" fill="#eff7e1" stroke="#4d7c0f"/><text x="649" y="196" text-anchor="middle" font-weight="700" fill="#4d7c0f">Counts</text><text x="649" y="213" text-anchor="middle">get_stats</text>
+    </g>
+    <path d="M300,128 L71,174" stroke="#64748b" fill="none" marker-end="url(#a4)"/>
+    <path d="M320,135 L213,174" stroke="#64748b" fill="none" marker-end="url(#a4)"/>
+    <path d="M360,142 L360,174" stroke="#64748b" marker-end="url(#a4)"/>
+    <path d="M400,135 L507,174" stroke="#64748b" fill="none" marker-end="url(#a4)"/>
+    <path d="M420,128 L649,174" stroke="#64748b" fill="none" marker-end="url(#a4)"/>
+    <!-- assemble -->
+    <path d="M71,226 L300,266" stroke="#64748b" fill="none" marker-end="url(#a4)"/>
+    <path d="M213,226 L320,264" stroke="#64748b" fill="none" marker-end="url(#a4)"/>
+    <path d="M360,226 L360,262" stroke="#64748b" marker-end="url(#a4)"/>
+    <path d="M507,226 L400,264" stroke="#64748b" fill="none" marker-end="url(#a4)"/>
+    <path d="M649,226 L420,266" stroke="#64748b" fill="none" marker-end="url(#a4)"/>
+    <rect x="200" y="264" width="320" height="40" rx="9" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="360" y="282" text-anchor="middle" font-weight="700" fill="#c2410c">③ Gather context</text><text x="360" y="297" text-anchor="middle" font-size="10" fill="#475569">get_document: add parent context, preconditions, feature config</text>
+    <path d="M360,304 L360,318" stroke="#64748b" marker-end="url(#a4)"/>
+    <rect x="160" y="320" width="400" height="36" rx="18" fill="#e8f6ec" stroke="#15803d" stroke-width="1.5"/>
+    <text x="360" y="343" text-anchor="middle" font-weight="700" fill="#15803d">④ Answer + ⑤ cite sources (sheet/row, Jira key, file:line)</text>
+    <path d="M520,280 Q640,280 649,230" stroke="#9333ea" stroke-width="1.5" stroke-dasharray="5 4" fill="none" marker-end="url(#a4)"/><text x="560" y="300" fill="#9333ea" font-size="10" font-weight="700">loop if not enough ↺</text>
+  </svg>
+  <div class="cap">Figure 4 — The LLM can loop: if the first results are thin, it searches again or follows links.</div>
+  </div>
+</section>
+
+<!-- ================= 9 DEMOS ================= -->
+<section>
+  <h2><span class="num">9</span>Demos: how the LLM handles 5 question types</h2>
+  <p class="lead">The test cases are real rows from your sheets. Jira and code are example data to show the flow.</p>
+
+  <div class="demo kw">
+    <div class="hd"><span>🔑 Demo 1 · Keyword question</span><span>exact code</span></div>
+    <div class="bd">
+      <div class="q">"Show me the steps for INT-RxFill-Naproxen-2a."</div>
+      <div class="steps"><span>Sees a code → keyword</span><span>search_knowledge(mode: keyword)</span><span>get_document</span><span>answer</span></div>
+<pre class="mongo">{ $search: { index: "kw_index",
+    phrase: { query: "INT-RxFill-Naproxen-2a", path: ["search.keywords", "content_md"] } } }</pre>
+      <div class="answer"><b>Answer:</b> This is the RxFill test in <i>eRx › Testcase - 2</i> (patient 123, Naproxen 500 mg). Steps: open Surescripts Message tester, respond to the NewRx as RxFill, choose template INT-RxFill-Naproxen-2a, confirm Quantity 15, Status <i>Partially Dispensed</i>, Reason <i>Out of Stock</i>, then Send. Expected result: a Success verification message. Last status: <b>PASS</b>.<br><span style="color:#64748b">Source: InteropsTeamFunctionalityDetails › eRx › row 39</span></div>
+    </div>
+  </div>
+
+  <div class="demo sem">
+    <div class="hd"><span>🧠 Demo 2 · Semantic question</span><span>same meaning, different words</span></div>
+    <div class="bd">
+      <div class="q">"Do we have a test for when the pharmacy can't give the patient the full amount?"</div>
+      <div class="steps"><span>No codes, just an idea → semantic</span><span>search_knowledge(mode: semantic, doc_types: test_case)</span><span>answer</span></div>
+<pre class="mongo">{ $vectorSearch: { index: "vector_index", path: "embedding.vector",
+    queryVector: embed("pharmacy can't give the full amount"),
+    filter: { doc_type: "test_case" }, numCandidates: 200, limit: 8 } }</pre>
+      <div class="answer"><b>Answer:</b> Yes. <i>"Send - RxFill request to OP - 2a"</i> covers a <b>partial fill</b>: the pharmacy marks the Rx <i>Partially Dispensed</i> with reason <i>Out of Stock</i> (quantity 15 of 30). The next test (row 40) validates those fields in the XML.<br><span style="color:#64748b">Sources: eRx row 39, eRx row 40</span></div>
+      <p style="margin:6px 0 0;font-size:9pt">💡 The question never says "RxFill", "partial" or "out of stock". The vector found it by <b>meaning</b>.</p>
+    </div>
+  </div>
+
+  <div class="demo hyb">
+    <div class="hd"><span>⚡ Demo 3 · Hybrid question</span><span>code + idea + filter</span></div>
+    <div class="bd">
+      <div class="q">"Is there an ADT-A08 test for insurance updates that runs in environment 93?"</div>
+      <div class="steps"><span>Code "ADT-A08" + idea "insurance update" + env</span><span>search_knowledge(mode: hybrid, filters.environment: ID93)</span><span>answer</span></div>
+<pre class="mongo">{ $rankFusion: { input: { pipelines: {
+    keyword:  [ { $search: { index: "kw_index", text: { query: "ADT-A08", path: "search.keywords" } } }, { $limit: 20 } ],
+    semantic: [ { $vectorSearch: { index: "vector_index", path: "embedding.vector",
+                  queryVector: embed("insurance update"), filter: { environments: "ID93" },
+                  numCandidates: 200, limit: 20 } } ]
+  } } } }</pre>
+      <div class="answer"><b>Answer:</b> Yes: <i>HUB_ADT&amp;SIU › TC 2.0 "Outbound_Verify when user update the patient demographics\Insurance…"</i>. Update a patient's insurance in OP, then check that Platform Manager › HUB › Messages receives an <b>ADT-A08</b> from the "Tanya ADT" third party. The ADT feature runs in <b>ID93, ID8 and ID10</b>.<br><span style="color:#64748b">Sources: HUB_ADT&amp;SIU row 4 · IntropsFeatures row 14</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="demo rel" style="margin-top:0">
+    <div class="hd"><span>🔗 Demo 4 · Complex relationship question</span><span>multi-hop: test → bug → code</span></div>
+    <div class="bd">
+      <div class="q">"Why is the CancelRx response validation failing, and which code should a developer look at?"</div>
+      <div class="steps"><span>filter_test_cases(module: eRx, status: FAIL, keyword: CancelRx)</span><span>finds R27</span><span>find_related(R27, depth 2)</span><span>gets R26, Jira, code</span><span>get_document for each</span><span>explain</span></div>
+<pre class="mongo">db.qa_knowledge.aggregate([
+  { $match: { _id: "TC:INTEROP:eRx:R27" } },
+  { $graphLookup: { from: "qa_knowledge", startWith: "$relations.target",
+      connectFromField: "relations.target", connectToField: "_id",
+      as: "linked", maxDepth: 1, depthField: "hop" } },
+  { $project: { "linked._id": 1, "linked.doc_type": 1, "linked.title": 1, "linked.summary": 1,
+                "linked.runs": 1, "linked.status": 1, "linked.hop": 1 } }
+])
+// Jira tickets point TO the test (AFFECTS), so also run:
+db.qa_knowledge.find({ "relations.target": "TC:INTEROP:eRx:R27", doc_type: "jira_ticket" })</pre>
+      <div class="answer"><b>Answer (the LLM joins the dots):</b>
+        <ol style="margin:4px 0 4px 18px;padding:0">
+          <li><b>The failing test:</b> eRx row 27 checks that the CancelResponse XML has Denial Reason, Code and Type. It is <b>FAIL</b>.</li>
+          <li><b>The step before it:</b> row 26 sends that CancelResponse. It is marked Pass, but its comment says <i>"Canel - Pending"</i>, so the send may not have completed. ⚠️ The data looks inconsistent.</li>
+          <li><b>Same check, other data:</b> row 57 (patient 123) has comment <i>"cancel pending"</i>. That suggests the problem isn't tied to one patient.</li>
+          <li><b>Known bug:</b> OPI-2045 <i>(example)</i>, "Denial Reason Code missing", is In Progress.</li>
+          <li><b>Where to look:</b> <code>CancelRxResponseParser.Parse</code>, src/Surescripts/CancelRxResponseParser.cs lines 42–118 <i>(example)</i>.</li>
+        </ol>
+        <b>Suggested next step:</b> re-run R26 and confirm the CancelResponse really arrives, then re-test R27 after OPI-2045 is fixed.<br>
+        <span style="color:#64748b">Sources: eRx rows 26, 27, 57 · JIRA OPI-2045 · CancelRxResponseParser.cs:42</span></div>
+    </div>
+  </div>
+
+  <div class="demo stat">
+    <div class="hd"><span>📊 Demo 5 · Stats question</span><span>counting, no vectors</span></div>
+    <div class="bd">
+      <div class="q">"Which module has the most MySQL failures right now?"</div>
+      <div class="steps"><span>Counting → stats</span><span>get_stats(group_by: module, track: MySQL, status: FAIL)</span><span>answer with a small table</span></div>
+<pre class="mongo">db.qa_knowledge.aggregate([
+  { $match: { doc_type: "test_case" } },
+  { $set:   { latest: { $last: { $filter: { input: "$runs", cond: { $eq: ["$$this.track", "MySQL"] } } } } } },
+  { $match: { "latest.status": "FAIL" } },
+  { $group: { _id: "$hierarchy.module", fails: { $sum: 1 } } },
+  { $sort:  { fails: -1 } }
+])</pre>
+      <div class="answer"><b>Answer:</b> A ranked list such as "Billing 12, FrontDesk 7, Nurse 3…", with a link to see the failing tests in each module. (The numbers depend on live data. Your current sheets are mostly NOT_RUN.)</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 10 WHY IT HELPS ================= -->
+<section>
+  <h2><span class="num">10</span>Why this helps the LLM find solutions and explain</h2>
+  <p class="lead">Compare a plain "Excel rows as text" setup with this design, for the same question as Demo 4.</p>
+
+  <div class="grid2">
+    <div class="card" style="background:#fdeeee;border-color:#f5b5b5"><h4 style="color:#b91c1c">❌ Without this design</h4>
+      <ul>
+        <li>The search finds row 27 alone. It doesn't know the patient or the drug, because that data was in row 2.</li>
+        <li>It has no idea that row 26 must run first.</li>
+        <li>It can't see the Jira bug or the code.</li>
+        <li>"Pass" vs "pass " vs "Fail" can't be filtered reliably.</li>
+        <li>The LLM <b>guesses</b>, and may make up a cause.</li>
+      </ul></div>
+    <div class="card" style="background:#effaf2;border-color:#a7dfb7"><h4 style="color:#15803d">✅ With this design</h4>
+      <ul>
+        <li><b>context_snapshot</b> means every chunk knows its patient, drug and pharmacy.</li>
+        <li><b>DEPENDS_ON</b> means the LLM checks the step before.</li>
+        <li><b>AFFECTS / FIXED_BY</b> means the bug and the code are one hop away.</li>
+        <li><b>Clean status enums</b> mean exact filters and counts.</li>
+        <li><b>Citations</b> mean every claim points to a row, ticket or file. The LLM <b>explains</b> instead of guessing.</li>
+      </ul></div>
+  </div>
+
+  <h3>What the LLM can now do</h3>
+  <table>
+    <tr><th style="width:30%">Ability</th><th>Made possible by</th></tr>
+    <tr><td>Find the right test even with different words</td><td>Vector of <code>content_md</code> + <code>search.aliases</code></td></tr>
+    <tr><td>Find exact codes and IDs every time</td><td>Keyword index on <code>search.keywords</code></td></tr>
+    <tr><td>Know the full setup (patient, config)</td><td><code>context_ref</code> + <code>get_document(include: context)</code></td></tr>
+    <tr><td>Explain <i>why</i> something fails</td><td><code>relations[]</code> + <code>$graphLookup</code> + Jira + code</td></tr>
+    <tr><td>Do impact analysis ("what if this code changes?")</td><td>Walk links backwards: code → TESTED_BY → tests</td></tr>
+    <tr><td>Compare databases (Firebird vs MySQL)</td><td><code>runs[]</code> with <code>track</code></td></tr>
+    <tr><td>Spot bad data</td><td><code>quality.flags</code>, e.g. Pass with a "Pending" comment</td></tr>
+    <tr><td>Be trusted</td><td>A <code>cite</code> on every result</td></tr>
+  </table>
+</section>
+
+<!-- ================= 11 ROLLOUT ================= -->
+<section>
+  <h2><span class="num">11</span>Step-by-step rollout</h2>
+  <p class="lead">Build it in small steps. Each step is useful on its own.</p>
+
+  <div class="phase"><div class="pn">Step 1</div><div><b>Excel → MongoDB.</b> Column mapping, sections, parent blocks, clean statuses, <code>runs[]</code>, <code>content_md</code>, embeddings. Create the 3 indexes.<br><i>Done when:</i> all ≈2,770 + interop tests are loaded, and a spot-check of 20 rows matches Excel.</div></div>
+  <div class="phase"><div class="pn">Step 2</div><div><b>MCP server (read-only)</b> with search_knowledge, get_document, filter_test_cases and get_stats.<br><i>Done when:</i> Demos 1, 2, 3 and 5 work end to end.</div></div>
+  <div class="phase"><div class="pn">Step 3</div><div><b>Links inside test data:</b> BELONGS_TO, USES_CONTEXT, DEPENDS_ON, SAME_SCENARIO, plus the find_related and find_by_entity tools.<br><i>Done when:</i> "what depends on R26?" returns R27.</div></div>
+  <div class="phase"><div class="pn">Step 4</div><div><b>Jira:</b> sync tickets updated since the last run, summarize comments, and create AFFECTS links.<br><i>Done when:</i> each failed test shows its linked bug.</div></div>
+  <div class="phase"><div class="pn">Step 5</div><div><b>Source code:</b> function-level chunks, LLM summaries, FIXED_BY links from commit messages, plus the trace_issue tool.<br><i>Done when:</i> Demo 4 works end to end with real data.</div></div>
+  <div class="phase"><div class="pn">Step 6</div><div><b>Measure quality.</b> Write 50 real questions with known right answers. Check that the right doc is in the top 5 and that every claim has a source. Tune keywords, aliases and weights.</div></div>
+
+  <h2 style="margin-top:22px"><span class="num">12</span>Notes &amp; limits</h2>
+  <ul>
+    <li><b>Dates:</b> the Excel sheets have no "tested on" column, so <code>executed_at</code> stays empty until testers add one. <code>recorded_at</code> is set by the import.</li>
+    <li><b>Jira and code examples</b> in this document (OPI-2045, CancelRxResponseParser) are made up to show the flow. Replace them with real ones.</li>
+    <li><b>MongoDB version:</b> <code>$vectorSearch</code> and <code>$search</code> run on Atlas, or self-hosted with the search process (<code>mongot</code>). <code>$rankFusion</code> needs 8.1+. Check your exact version first.</li>
+    <li><b>Embedding model:</b> pick one and keep it. Changing models means re-embedding everything. Store the model name in <code>embedding.model</code>.</li>
+    <li><b>Security:</b> the test data has patient names. Keep the MCP server read-only, behind login, and restrict who can query it.</li>
+  </ul>
+</section>
+
+<script>
+document.querySelectorAll('pre.json, pre.mongo').forEach(function(pre){
+  var t = pre.textContent;
+  var esc = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  esc = esc.replace(/("(?:\\.|[^"\\])*")(\s*:)?|(\/\/[^\n]*)|\b(true|false|null)\b|(-?\b\d+(?:\.\d+)?\b)/g,
+    function(m, s, colon, cm, b, n){
+      if (s) return colon ? '<span class="k">'+s+'</span>'+colon : '<span class="s">'+s+'</span>';
+      if (cm) return '<span class="c">'+cm+'</span>';
+      if (b) return '<span class="b">'+b+'</span>';
+      if (n) return '<span class="n">'+n+'</span>';
+      return m;
+    });
+  pre.innerHTML = esc;
+});
+</script>
+</body>
+</html>
